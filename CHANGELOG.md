@@ -1,3 +1,105 @@
+## 7.7.44 2022-12-31 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Change to `service_` commands - New addition `service_list` and also `service_reset` to reset watchdog status to avoid having to restart container after triggered
+      - `service_down` and `service_up` also take `all` argument to bring up or down all services
+
+
+## 7.7.43 2022-12-23 <dave at tiredofit dot ca>
+
+   ### Added
+      - Fluent-Bit 2.0.8
+
+
+## 7.7.42 2022-12-22 <dave at tiredofit dot ca>
+
+   ### Changed
+      - No need to even think about building yq for <3.10
+
+
+## 7.7.41 2022-12-22 <dave at tiredofit dot ca>
+
+   ### Added
+      - Start building yq package for variants that support building zabbix-agent2 - Warning, 'jq' will be removed in a future release
+      - prepare_service on cont-init.d folders ingests variables differently
+
+
+## 7.7.40 2022-12-12 <dave at tiredofit dot ca>
+
+   ### Added
+      - Golang building 1.19.4
+
+   ### Changed
+      - Allow clone_git_repo to shallow clone and still perform git describe on tags
+
+
+## 7.7.39 2022-12-11 <dave at tiredofit dot ca>
+
+   ### Added
+      - Zabbix Agent 6.2.6
+
+
+## 7.7.38 2022-12-05 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix for Zabbix volatile data permissions
+
+
+## 7.7.37 2022-11-30 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix quoting issue with package remove
+
+
+## 7.7.36 2022-11-29 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Quiet down package function
+
+
+## 7.7.35 2022-11-29 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Handle better dependencies with package remove
+
+
+## 7.7.34 2022-11-29 <dave at tiredofit dot ca>
+
+   ### Added
+      - Introduce "package" function
+
+
+## 7.7.33 2022-11-25 <dave at tiredofit dot ca>
+
+   ### Added
+      - Fluent-bit 2.0.6
+
+
+## 7.7.32 2022-11-22 <dave at tiredofit dot ca>
+
+   ### Added
+      - Introduce Alpine 3.17 Using OpenSSL instead of LibreSSL
+
+
+## 7.7.31 2022-11-11 <dave at tiredofit dot ca>
+
+   ### Added
+      - Golang build 1.19.3
+      - Fluent-bit 2.0.5
+
+
+## 7.7.30 2022-11-08 <dave at tiredofit dot ca>
+
+   ### Added
+      - Fluent-bit 2.0.4
+
+
+## 7.7.29 2022-11-07 <dave at tiredofit dot ca>
+
+   ### Added
+      - Zabbix Agent 6.2.4
+
+
 ## 7.7.28 2022-10-29 <dave at tiredofit dot ca>
 
    ### Added

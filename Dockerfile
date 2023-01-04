@@ -1,18 +1,20 @@
-ARG ALPINE_VERSION=3.16
+ARG ALPINE_VERSION=3.17
 
 FROM docker.io/alpine:${ALPINE_VERSION}
 LABEL maintainer="Dave Conroy (github.com/tiredofit)"
 
-ARG GOLANG_VERSION=1.19.2
+ARG GOLANG_VERSION=1.19.4
 ARG DOAS_VERSION
 ARG FLUENTBIT_VERSION
 ARG S6_OVERLAY_VERSION
+ARG YQ_VERSION
 ARG ZABBIX_VERSION
 
 ### Set defaults
-ENV FLUENTBIT_VERSION=${FLUENTBIT_VERSION:-"2.0.3"} \
+ENV FLUENTBIT_VERSION=${FLUENTBIT_VERSION:-"2.0.8"} \
     S6_OVERLAY_VERSION=${S6_OVERLAY_VERSION:-"3.1.2.1"} \
-    ZABBIX_VERSION=${ZABBIX_VERSION:-"6.2.3"} \
+    YQ_VERSION=${YQ_VERSION:-"v4.30.6"} \
+    ZABBIX_VERSION=${ZABBIX_VERSION:-"6.2.6"} \
     DOAS_VERSION=${DOAS_VERSION:-"v6.8.2"} \
     DEBUG_MODE=FALSE \
     TIMEZONE=Etc/GMT \
@@ -36,13 +38,18 @@ RUN case "$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | cut -d . -f 
     esac ; \
     \
     case "$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | cut -d . -f 1,2 | cut -d _ -f 1)" in \
-        3.11 | 3.12 | 3.13 | 3.14 | 3.15 | 3.16* | 3.17* | edge ) zabbix_args=" --enable-agent2 " ; zabbix_agent2=true ; fluentbit_make=true ; echo "** Building Zabbix Agent 2" ; echo "** Building Fluent Bit" ;; \
+        3.11 | 3.12 | 3.13 | 3.14 | 3.15 | 3.16 | 3.17* | 3.18* | edge ) zabbix_args=" --enable-agent2 " ; zabbix_agent2=true ; fluentbit_make=true ; echo "** Building Zabbix Agent 2" ; echo "** Building Fluent Bit" ; echo "** Building yq" ;; \
         *) : ;; \
     esac ; \
     \
     case "$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | cut -d . -f 1,2 | cut -d _ -f 1)" in \
         3.5 | 3.6 | 3.7 | 3.8 | 3.9 | 3.10 | 3.11 | 3.12 | 3.13 | 3.14 | 3.15 | 3.16 ) fts=fts ;; \
         3.17 ) fts=musl-fts ;; \
+        *) : ;; \
+    esac ; \
+    case "$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | cut -d . -f 1,2 | cut -d _ -f 1)" in \
+        3.5 | 3.6 | 3.7 | 3.8 | 3.9 | 3.10 | 3.11 | 3.12 | 3.13 | 3.14 | 3.15 | 3.16 ) alpine_ssl=libressl ;; \
+        3.17* | 3.18* ) alpine_ssl=openssl ;; \
         *) : ;; \
     esac ; \
     \
@@ -71,6 +78,7 @@ RUN case "$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | cut -d . -f 
     ### Add core utils
     apk add -t .base-rundeps \
                 acl \
+                ${alpine_ssl} \
                 bash \
                 bc \
                 ${busybox_extras} \
@@ -86,7 +94,6 @@ RUN case "$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | cut -d . -f 
                 less \
                 libgcc \
                 $(apk search libssl1* -q) \
-                libressl \
                 logrotate \
                 msmtp \
                 nano \
@@ -155,6 +162,13 @@ RUN case "$(cat /etc/os-release | grep VERSION_ID | cut -d = -f 2 | cut -d . -f 
     ./make.bash 1>/dev/null ; \
     export GOROOT=/usr/src/golang/ ; \
     export PATH="/usr/src/golang/bin:$PATH" ; \
+    \
+    ### YQ compilation and install
+    git clone https://github.com/mikefarah/yq /usr/src/yq ;\
+    cd /usr/src/yq ;\
+    git checkout ${YQ_VERSION} ;\
+    go build ; \
+    cp -R yq /usr/local/bin ; \
     fi ; \
     \
     ### Zabbix installation

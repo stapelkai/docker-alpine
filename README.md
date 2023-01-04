@@ -1,7 +1,7 @@
 # github.com/tiredofit/docker-alpine
 
 [![GitHub release](https://img.shields.io/github/v/tag/tiredofit/docker-alpine?style=flat-square)](https://github.com/tiredofit/docker-alpine/releases/latest)
-[![Build Status](https://img.shields.io/github/workflow/status/tiredofit/docker-alpine/build?style=flat-square)](https://github.com/tiredofit/docker-alpine/actions?query=workflow%3Abuild)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/tiredofit/docker-alpine/main.yml?branch=main&style=flat-square)](https://github.com/tiredofit/docker-alpine/actions)
 [![Docker Stars](https://img.shields.io/docker/stars/tiredofit/alpine.svg?style=flat-square&logo=docker)](https://hub.docker.com/r/tiredofit/alpine/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/tiredofit/alpine.svg?style=flat-square&logo=docker)](https://hub.docker.com/r/tiredofit/alpine/)
 [![Become a sponsor](https://img.shields.io/badge/sponsor-tiredofit-181717.svg?logo=github&style=flat-square)](https://github.com/sponsors/tiredofit)
@@ -14,7 +14,7 @@
 
 Dockerfile to build an [alpine](https://www.alpinelinux.org/) linux container image.
 
-* Currently tracking 3.5, 3.6, 3.7, 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14, 3.15, 3.16 and edge.
+* Currently tracking 3.5, 3.6, 3.7, 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14, 3.15, 3.16, 3.17 and edge.
 * [s6 overlay](https://github.com/just-containers/s6-overlay) enabled for PID 1 init capabilities.
 * [zabbix-agent](https://zabbix.org) (Classic and Modern) for individual container monitoring.
 * Scheduling via cron with other helpful tools (bash, curl, less, logrotate, nano, vim) for easier management.
@@ -84,6 +84,7 @@ The following image tags are available along with their tagged release based on 
 | Alpine version | Tag     |
 | -------------- | ------- |
 | `edge`         | `:edge` |
+| `3.17`         | `:3.17` |
 | `3.16`         | `:3.16` |
 | `3.15`         | `:3.15` |
 | `3.14`         | `:3.14` |

@@ -68,6 +68,8 @@ clone_git_repo() {
     ## Usage: clone_git_repo https://github.com/maintainer/repo <branch/tag/commit> <custom_dest>
     ## It will automatically create a folder in /usr/src/<repo name> eg repo and also expose a variable called GIT_REPO_SRC and GIT_REPO_SRC_<REPONAME> in caps
     ## Any special characters get removed other than numbers and letters
+    set +x
+    if [ ${DEBUG_MODE,,} = "true" ] ; then set -x ; fi
     if ! [ -x "$(command -v git)" ]; then
         echo '[clone_git_repo] Git is not installed'
         exit 1
@@ -88,7 +90,7 @@ clone_git_repo() {
         export GIT_REPO_SRC=${GIT_REPO_SRC:-"${repo}"}
         export GIT_REPO_SRC_${repo_name^^}="${repo}"
         if [ -d "${repo}" ] ; then
-            print_error "[clone_git_repo] Directory ${repo_path}${repo} already exists. Cannot clone"
+            echo "[clone_git_repo] Directory ${repo_path}${repo} already exists. Cannot clone"
             exit 1
         else
             if [[ $1 == *".git" ]] ; then
@@ -103,6 +105,7 @@ clone_git_repo() {
             git remote add origin "${1}"${append_git_prefix}
             if [ -n "${2}" ] ; then repo_commit="${2}" ; fi
             echo "[clone_git_repo] Cloning Git Repo '${1}' '${2}' ${repo_text}"
+            git fetch --depth=1 origin ${2} +refs/tags/*:refs/tags/*
             git fetch --depth 1 origin ${2}
             git -c advice.detachedHead=false checkout FETCH_HEAD
             git submodule update --init
@@ -111,6 +114,7 @@ clone_git_repo() {
         echo "[clone_git_repo] You tried to call the function but there's no arguments"
         exit 1
     fi
+    set -x
 }
 
 create_logrotate() {
@@ -634,6 +638,97 @@ output_on() {
     fi
 }
 
+package() {
+    cleanup() {
+        case "${distro}" in
+            "alpine" )
+                rm -rf /var/cache/apk/*
+            ;;
+            "debian" | "ubuntu" )
+                apt-get clean -y
+                rm -rf /var/lib/apt/lists/*
+            ;;
+        esac
+    }
+
+    install() {
+        case "${distro}" in
+            "alpine" )
+                if [[ "${1}" =~ ^\..* ]] ; then
+                    local dependencies="-t"
+                fi
+                apk add ${dependencies} $@
+            ;;
+            "debian" | "ubuntu" )
+                if [[ "${1}" =~ ^\..* ]] ; then
+                    shift
+                fi
+                apt-get install -y --no-install-recommends $@
+            ;;
+        esac
+    }
+
+    remove() {
+        case "${distro}" in
+            "alpine" )
+                apk del $@
+            ;;
+            "debian" | "ubuntu" )
+                local packages="$@"
+                if [[ "${packages}" =~ \..* ]] ; then
+                    packages=$(echo "${packages}" | sed "s|\..* ||g")
+                fi
+                apt-get purge -y ${packages}
+                apt-get autoremove -y
+            ;;
+        esac
+    }
+
+    update() {
+        case "${distro}" in
+            "alpine" )
+                apk update
+            ;;
+            "debian" | "ubuntu" )
+                apt-get update
+            ;;
+        esac
+    }
+
+    upgrade() {
+        case "${distro}" in
+            "alpine" )
+                apk upgrade
+            ;;
+            "debian" | "ubuntu" )
+                apt-get upgrade -y
+            ;;
+        esac
+    }
+
+    set +x
+    local distro
+    distro=$(cat /etc/os-release |grep ^ID= | cut -d = -f2)
+    local action="${1}"
+    shift
+    local arguments=$@
+
+    case "${action}" in
+        add | install )
+            action=install
+            "${action}" "${arguments}"
+        ;;
+        delete | remove | uninstall )
+            action=remove
+            "${action}" "${arguments}"
+        ;;
+        * )
+            "${action}" "${arguments}"
+        ;;
+    esac
+    set -x
+}
+
 prepare_service() {
     ## Prepare Service by loading defaults and functions
     ## Relies on get_defaults and get_functions above in script
@@ -643,8 +738,10 @@ prepare_service() {
     if [ -n "$1" ] ; then
         case "$(dirname "$0")" in
             "/var/run/s6/etc/cont-init.d" | "/etc/cont-init.d" )
+                set -a
                 get_defaults "$1"
                 get_functions "$1"
+                set +a
             ;;
             *)
                 case "$1" in
@@ -664,8 +761,10 @@ prepare_service() {
     else
         case "$(dirname "$0")" in
             "/var/run/s6/etc/cont-init.d" | "/etc/cont-init.d")
+                set -a
                 get_defaults
                 get_functions
+                set +a
             ;;
             *)
                 get_defaults
